@@ -24,8 +24,9 @@ def _find_board(ctx):
 @task
 def upload(ctx):
     try:
+        # We probably should not sudo.
         device_port = _find_board(ctx)
-        ctx.run('bin/arduino-cli upload -p {port} -b arduino:avr:uno ./src/LukeWarmBeer'.format(port=device_port))
+        ctx.run('sudo bin/arduino-cli upload -p {port} -b arduino:avr:uno ./src/LukeWarmBeer'.format(port=device_port))
     except NoDeviceFoundException:
         print('No device found')
     except Exception as e:
