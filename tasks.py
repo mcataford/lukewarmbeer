@@ -12,8 +12,8 @@ def _find_board(ctx):
         
         if not cleaned_line:
             continue
-
-        port, device = cleaned_line
+        line_items = cleaned_line
+        port, device = line_items[0], line_items[-1]
         
         # This assumes that only one device is used at a time. >:(
         if device != 'Unknown':
@@ -24,11 +24,13 @@ def _find_board(ctx):
 @task
 def upload(ctx):
     try:
-        device = _find_board(ctx)
-        print(device)
+        device_port = _find_board(ctx)
+        ctx.run('bin/arduino-cli upload -p {port} -b arduino:avr:uno ./src/LukeWarmBeer'.format(port=device_port))
     except NoDeviceFoundException:
         print('No device found')
+    except Exception as e:
+        print(e)
 
 @task
 def compile(ctx):
-    ctx.run('echo "holy moly"')
+    ctx.run('bin/arduino-cli compile -b arduino:avr:uno ./src/LukeWarmBeer')
