@@ -1,0 +1,6 @@
+VENV_DIR=lukewarmbeer.venv
+
+rm -rf $VENV_DIR
+virtualenv --python=python3.6 $VENV_DIR
+source $VENV_DIR/bin/activate
+pip install -r dev_requirements.txt
