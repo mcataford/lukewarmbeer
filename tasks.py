@@ -22,6 +22,10 @@ def _find_board(ctx):
     raise NoDeviceFoundException()
 
 @task
+def devices(ctx):
+    ctx.run('bin/arduino-cli board list')
+
+@task
 def upload(ctx):
     try:
         # We probably should not sudo.
