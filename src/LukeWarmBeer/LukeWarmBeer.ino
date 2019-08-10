@@ -1,10 +1,17 @@
+int LED_PIN = 13;
+int SWITCH_PIN = 8;
+
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(SWITCH_PIN, INPUT);
 }
 
 void loop() {
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(100);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(100);
+    int switch_state = digitalRead(SWITCH_PIN);
+
+    if (switch_state) {
+        digitalWrite(LED_PIN, HIGH);
+    } else {
+        digitalWrite(LED_PIN, LOW);
+    }
 }
