@@ -1,6 +1,8 @@
 # Prerequisites
 *.d
 lukewarmbeer.venv
+bin
+
 # Object files
 *.o
 *.ko
