@@ -5,6 +5,7 @@
 You can set up your environment using the bootstrap script `. scripts/boostrap`, then any of the invoke commands in `tasks.py`.
 
 |Command|Effect|
+|---|---|
 |`compile`|Compiles the `ino` sketch in `src/LukeWarmBeer`. Hardcoded to `avr` targets.|
 |`upload`|Uploads the compiled sketch to a board\*|
 |`devices`|Lists connected devices|
