@@ -1,10 +1,12 @@
 VENV_DIR=lukewarmbeer.venv
+PLATFORM=arduino:avr
+REQUIREMENTS=dev_requirements.txt
 
 # Install arduino-cli
 curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
-bin/arduino-cli core install arduino:avr
+bin/arduino-cli core install $PLATFORM
 
 rm -rf $VENV_DIR
 virtualenv --python=python3.6 $VENV_DIR
 source $VENV_DIR/bin/activate
-pip install -r dev_requirements.txt
+pip install -r $REQUIREMENTS
