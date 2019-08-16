@@ -1,0 +1,25 @@
+* Netlist created with www.circuit-diagram.org
+* LukeWarmBeer
+V1 0 0
+R2 1 0 1000000
+V3 2 0
+V4 3 5
+'changeoverswitch a:4 c:3 b:2 t=Changeover closed=False
+V5 5 0
+V6 6 0
+'motor b:7 a:8
+V7 9 0
+V8 10 5
+C9 10 6 1E-07
+V10 11 12
+V11 12 0
+C12 11 12 1E-07
+R13 14 13 1000
+D14 14 5
+'microcontroller #9:15 #7:16 #11:7 #5:8 #15:9 #13:10 #1:11 #3:12 header=A4988 Stepper Driver Breakout sz=16 p0=~ENABLE p1=VMOT p2=MS1 p3=GND p4=MS2 p5=2B p6=MS3 p7=2A p8=~RESET p9=1A p10=~SLEEP p11=1B p12=STEP p13=VDD p14=DIR p15=GND p16= p17= p18= p19= p20= p21= p22= p23= p24= p25= p26= p27= p28= p29=
+'microcontroller header=A4988 Stepper Driver Breakout sz=16 p0=~ENABLE p1=VMOT p2=MS1 p3=GND p4=MS2 p5=2B p6=MS3 p7=2A p8=~RESET p9=1A p10=~SLEEP p11=1B p12=STEP p13=VDD p14=DIR p15=GND p16= p17= p18= p19= p20= p21= p22= p23= p24= p25= p26= p27= p28= p29=
+'microcontroller header=MAX7219 7-Segment Driver sz=24 p0=DIN p1=DOUT p2=DIG 0 p3=SEG D p4=DIG 4 p5=SEG DP p6=GND p7=SEG E p8=DIG 6 p9=SEG C p10=DIG 2 p11=V+ p12=DIG 3 p13=ISET p14=DIG 7 p15=SEG G p16=GND p17=SEG B p18=DIG 5 p19=SEG F p20=DIG 1 p21=SEG A p22=LOAD ~CS p23=CLK p24= p25= p26= p27= p28= p29=
+'microcontroller #12:1 #10:1 #4:1 #2:1 #1:4 #0:13 header=74ACT11008 Quad AND sz=16 p0=1A p1=1B p2=1Y p3=2A p4=2Y p5=2B p6=GND p7=VCC p8=GND p9=VCC p10=3Y p11=3A p12=4Y p13=3B p14=4B p15=4A p16= p17= p18= p19= p20= p21= p22= p23= p24= p25= p26= p27= p28= p29=
+'microcontroller #12:1 #10:1 #4:1 #2:1 header=74ACT11008 Quad AND sz=16 p0=1A p1=1B p2=1Y p3=2A p4=2Y p5=2B p6=GND p7=VCC p8=GND p9=VCC p10=3Y p11=3A p12=4Y p13=3B p14=4B p15=4A p16= p17= p18= p19= p20= p21= p22= p23= p24= p25= p26= p27= p28= p29=
+'microcontroller #0:13 header=CD4051 Multiplexer sz=16 p0=CH4 p1=VDD p2=CH6 p3=CH2 p4=COM p5=CH1 p6=CH7 p7=CH0 p8=CH5 p9=CH3 p10=INH p11=A p12=VEE p13=B p14=VSS p15=C p16= p17= p18= p19= p20= p21= p22= p23= p24= p25= p26= p27= p28= p29=
+'microcontroller #29:1 header=Arduino Nano v3 sz=30 p0=D1 TX p1=Vin p2=D0 RX p3=GND p4=RST p5=RST p6=GND p7=5V p8=D2 p9=A7 p10=D3 p11=A6 p12=D4 p13=A5 p14=D5 p15=A4 p16=D6 p17=A3 p18=D7 p19=A2 p20=D8 p21=A1 p22=D9 p23=A0 p24=D10 p25=AREF p26=D11 p27=3V3 p28=D12 p29=D13
