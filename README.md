@@ -22,13 +22,17 @@ To edit the schematic below, go to https://www.circuit-diagram.org/editor/open a
 
 ## Bill of Materials
 
-| Description               | Part Number             | Quantity | Approx Cost Per |
-|---------------------------|-------------------------|----------|-----------------|
-| Microcontroller           | Arduino Nano v3         |          |                 |
-| Quad AND                  | 74ACT11008N             | 2        | 3.82 CAD        |
-| 8 channel multiplexer     | CD4051                  |          |                 |
-| 7 segment display driver  | MAX7219                 |          |                 |
-| 4 digit 7 segment display |                         |          |                 |
-| 2 digit 7 segment display |                         |          |                 |
-| 1 digit 7 segment display |                         |          |                 |
-| Stepper motor driver      | A4988 breakout (Pololu) | 2        | 5.95 USD        |
+| Description                   | Part Number                                                  | Quantity | Approx Cost Per |
+|-------------------------------|--------------------------------------------------------------|----------|-----------------|
+| Microcontroller               | Arduino Nano v3                                              |          |                 |
+| Quad AND                      | 74ACT11008N                                                  | 2        | 3.82 CAD        |
+| 8 channel multiplexer         | CD4051                                                       |          |                 |
+| 7 segment display driver      | MAX7219                                                      |          |                 |
+| 4 digit 7 segment display     |                                                              |          |                 |
+| 2 digit 7 segment display     |                                                              |          |                 |
+| 1 digit 7 segment display     |                                                              |          |                 |
+| Stepper motor driver          | A4988 breakout (Pololu)                                      | 2        | 5.95 USD        |
+| Linear rail and attachments   | https://tinyurl.com/yx9mtj46 or https://tinyurl.com/y6kkpw2g |          |                 |
+| Timing belt and shaft coupler | https://tinyurl.com/y4ls89b8                                 |          |                 |
+| Telescoping rod               | https://tinyurl.com/y29gk65v                                 |          |                 |
+| Ball bearing                  | https://tinyurl.com/y5ydloxp                                 |          |                 |
