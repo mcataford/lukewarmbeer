@@ -15,24 +15,24 @@ _* The current setup assumes that only one board is connected at a time. It will
 
 ## Schematic
 
-To edit the schematic below, go to https://www.circuit-diagram.org/editor/open and import the .cddx file in `circuit/`. It can also be viewed at https://crcit.net/c/4992981ec4af4ab395cb0c2e95898edd.
+Circuit was drawn using easyeda.com
+https://easyeda.com/editor#id=|5c82f9019097461287bc8b2208835527
 
 ![Circuit Diagram](circuit/circuit.png)
 
 
 ## Bill of Materials
 
-| Description                   | Part Number                                                  | Quantity | Approx Cost Per |
-|-------------------------------|--------------------------------------------------------------|----------|-----------------|
-| Microcontroller               | Arduino Nano v3                                              |          |                 |
-| Quad AND                      | 74ACT11008N                                                  | 2        | 3.82 CAD        |
-| 8 channel multiplexer         | CD4051                                                       |          |                 |
-| 7 segment display driver      | MAX7219                                                      |          |                 |
-| 4 digit 7 segment display     |                                                              |          |                 |
-| 2 digit 7 segment display     |                                                              |          |                 |
-| 1 digit 7 segment display     |                                                              |          |                 |
-| Stepper motor driver          | A4988 breakout (Pololu)                                      | 2        | 5.95 USD        |
-| Linear rail and attachments   | https://tinyurl.com/yx9mtj46 or https://tinyurl.com/y6kkpw2g |          |                 |
-| Timing belt and shaft coupler | https://tinyurl.com/y4ls89b8                                 |          |                 |
-| Telescoping rod               | https://tinyurl.com/y29gk65v                                 |          |                 |
-| Ball bearing                  | https://tinyurl.com/y5ydloxp                                 |          |                 |
+| Description                   | Part Number                       | Quantity | Approx Cost Per |
+|-------------------------------|-----------------------------------|----------|-----------------|
+| Microcontroller               | Arduino Nano v3                   |          |                 |
+| Quad AND                      | 74ACT11008N                       | 2        | 3.82 CAD        |
+| 16 channel multiplexer        | 74HC4067                          |          |                 |
+| 7 segment display driver      | MAX7219                           |          |                 |
+| 4 digit 7 segment display     |                                   |          |                 |
+| 2 digit 7 segment display     |                                   |          |                 |
+| 1 digit 7 segment display     |                                   |          |                 |
+| Stepper motor driver          | A4988 breakout (Pololu)           | 2        | 5.95 USD        |
+| Timing belt and shaft coupler | https://tinyurl.com/y4ls89b8      |          |                 |
+| Telescoping rod               | e.g. https://tinyurl.com/y29gk65v |          |                 |
+| 5/8 inch Ball bearing         |                                   |          |                 |
