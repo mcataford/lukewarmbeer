@@ -20,6 +20,7 @@ https://easyeda.com/editor#id=|5c82f9019097461287bc8b2208835527
 
 ![Circuit Diagram](circuit/circuit.png)
 
+__Important note__: The joysticks are subbed with 10K linear potentiometers, the pin being read as output for those potentiometers should have a ~100ohms resistance on it so that the maximal current when the variable resistance is minimal is at most 50mA.
 
 ## Bill of Materials
 
