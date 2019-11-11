@@ -3,16 +3,19 @@ const int OFF = 0;
 const int ON = 1;
 
 // Inputs
-const int L_DOWN = 9;
+const int L_DOWN = 10;
 const int L_UP = 8;
 const int R_DOWN = 1;
 const int R_UP = 0;
 
+const int BALL_RETURN = 2;
+const int LEVEL_SENSOR = 3;
+
 // Motor outputs
 const int L_MOTOR_DIRECTION = 4;
-const int L_MOTOR_STEP = 10;
+const int L_MOTOR_STEP = 9;
 const int R_MOTOR_DIRECTION = 7;
-const int R_MOTOR_STEP = 3;
+const int R_MOTOR_STEP = 11;
 
 // MAX7219 LED Driver pins
 const int MAX7219_DIN = 6;
@@ -23,7 +26,7 @@ const int MAX7219_CS = 12;
 const int MAX7219_REG_DECODE = 0x09;
 const int MAX7219_REG_INTENSITY = 0x0A;
 const int MAX7219_REG_SCANLIMIT = 0x0B;
-const int  MAX7219_REG_SHUTDOWN = 0x0C;
+const int MAX7219_REG_SHUTDOWN = 0x0C;
 const int MAX7219_REG_DISPTEST = 0x0F;
 
 /******************************************************************************
@@ -31,40 +34,51 @@ const int MAX7219_REG_DISPTEST = 0x0F;
  */
 
 void setup() {
-  pinMode(L_MOTOR_DIRECTION, OUTPUT);
-  pinMode(L_MOTOR_STEP, OUTPUT);
-  pinMode(R_MOTOR_DIRECTION, OUTPUT);
-  pinMode(R_MOTOR_STEP, OUTPUT);
+  configureInputs();
+  configureLeftMotor();
+  configureRightMotor();
+  configureDisplay();
+}
 
+void configureInputs() {
   pinMode(L_DOWN, INPUT_PULLUP);
   pinMode(L_UP, INPUT_PULLUP);
   pinMode(R_DOWN, INPUT_PULLUP);
   pinMode(R_UP, INPUT_PULLUP);
+  pinMode(BALL_RETURN, INPUT_PULLUP);
+  pinMode(LEVEL_SENSOR, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(BALL_RETURN), ballReturn, FALLING);
+  attachInterrupt(digitalPinToInterrupt(LEVEL_SENSOR), levelSensor, FALLING);
+}
 
-  configureLeftMotor();
-  configureRightMotor();
+void ballReturn() {
+}
 
-  configureDisplay();
+void levelSensor() {
 }
 
 void configureLeftMotor() {
-  // timer 1, output B
+  pinMode(L_MOTOR_DIRECTION, OUTPUT);
+  pinMode(L_MOTOR_STEP, OUTPUT);
+  // timer 1, output A, pin 9
+  // Section 15 in datasheet
   // fast PWM with top limit set by OCR1A
-  // clock prescale starts at max: 1024
-  TCCR1A = _BV(COM1B1) | _BV(WGM11) | _BV(WGM10);
-  TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS12) | _BV(CS10);
-  OCR1A = 255;
-  OCR1B = 128;
+  // clock prescale starts 64
+  TCCR1A = bit(COM1A0) | bit(WGM11) | bit(WGM10);
+  TCCR1B = bit(WGM13) | bit(WGM12) | bit(CS11) | bit(CS10);
+  OCR1A = 75;
 }
 
 void configureRightMotor() {
-  // timer 2, ouput B
-  // fast PWM with top limit set by OCR2A
-  // clock prescale starts at max: 1024
-  TCCR2A = _BV(COM2B1) | _BV(WGM21) | _BV(WGM20);
-  TCCR2B = _BV(WGM22) | _BV(CS22) | _BV(CS21) | _BV(CS20);
-  OCR2A = 255;
-  OCR2B = 128;
+  pinMode(R_MOTOR_DIRECTION, OUTPUT);
+  pinMode(R_MOTOR_STEP, OUTPUT);
+  // timer 2, ouput A, pin 11
+  // Section 17 in datasheet
+  // fast PWM with top limit set by OCR2A, inverting
+  // clock prescale starts at 64
+  TCCR2A = bit(COM2A0) | bit(WGM21) | bit(WGM20);
+  TCCR2B = bit(WGM22) | bit(CS22);
+  OCR2A = 200;
 }
 
 void configureDisplay() {
@@ -72,7 +86,6 @@ void configureDisplay() {
   pinMode(MAX7219_CS, OUTPUT);
   pinMode(MAX7219_CLK, OUTPUT);
   digitalWrite(MAX7219_CS, HIGH);
-
   resetDisplay();
 }
 
@@ -88,6 +101,11 @@ void resetDisplay()
  */
 
 void loop() {
+  controlMotors();
+  /* setDisplay(); */
+}
+
+void testDisplay() {
   String score = "01234567";
 
   setRegister(MAX7219_REG_SHUTDOWN, OFF); // turn off
@@ -103,19 +121,8 @@ void loop() {
   setRegister(8, score.charAt(7));
   setRegister(MAX7219_REG_SHUTDOWN, ON); // turn on
 
-  /* setRegister(MAX7219_REG_DISPTEST, OFF); // disp test for debugging */
-
-  delay(1000);
-
-    /* int switch_state = digitalRead(SWITCH_PIN); */
-
-    /* if (switch_state) { */
-    /*     digitalWrite(LED_PIN, HIGH); */
-    /* } else { */
-    /*     digitalWrite(LED_PIN, LOW); */
-    /* } */
+  delay(100);
 }
-
 
 void setRegister(byte reg, byte value)
 {
@@ -134,33 +141,45 @@ void controlMotors() {
 
     if (l_down) {
       digitalWrite(L_MOTOR_DIRECTION, HIGH);
-      analogWrite(L_MOTOR_STEP, 124);
+      setLeftSpeed(32);
     } else if (l_up) {
       digitalWrite(L_MOTOR_DIRECTION, LOW);
-      analogWrite(L_MOTOR_STEP, 124);
+      setLeftSpeed(16);
     } else {
-      analogWrite(L_MOTOR_STEP, 0);
+      setLeftSpeed(0);
     }
 
     if (r_down) {
       digitalWrite(R_MOTOR_DIRECTION, HIGH);
-      analogWrite(R_MOTOR_STEP, 124);
+      setRightSpeed(150);
     } else if (r_up) {
       digitalWrite(R_MOTOR_DIRECTION, LOW);
-      analogWrite(R_MOTOR_STEP, 124);
+      setRightSpeed(220);
     } else {
-      analogWrite(R_MOTOR_STEP, 0);
+      setRightSpeed(0);
     }
 }
 
 void setLeftSpeed(int count) {
-  // use timer 1, output B, pin 10
+  // set the max count value and the count at which the output toggles
+  // max count is 256
   OCR1A = count;
-  OCR1B = count / 2;
+  if (count == 0) {
+    bitClear(TCCR1A, COM1A0);
+    return;
+  } else if (!bitRead(TCCR1A, COM1A0)) {
+    bitSet(TCCR1A, COM1A0);
+  }
 }
 
 void setRightSpeed(int count) {
-  // use timer 2, output B, pin 3
+  // set the max count value and the count at which the output toggles
+  // max count is 256
   OCR2A = count;
-  OCR2B = count / 2;
+  if (count == 0) {
+    bitClear(TCCR2A, COM2A0);
+    return;
+  } else if (!bitRead(TCCR2A, COM2A0)) {
+    bitSet(TCCR2A, COM2A0);
+  }
 }
