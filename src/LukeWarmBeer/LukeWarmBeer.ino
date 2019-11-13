@@ -3,18 +3,29 @@ const int OFF = 0;
 const int ON = 1;
 
 // Inputs
-const int L_DOWN = 10;
-const int L_UP = 8;
-const int R_DOWN = 1;
-const int R_UP = 0;
+const int L_UP = A5;
+const int L_DOWN = A4;
+const int R_UP = A3;
+const int R_DOWN = A2;
+
+const int L_BOTTOM = A1;
+const int R_BOTTOM = A0;
 
 const int BALL_RETURN = 2;
 const int LEVEL_SENSOR = 3;
+const int START = 7;
+
+// Level setters
+// can also use PORTD B00011011 to set these
+const int LEVEL_SET_A = 0;
+const int LEVEL_SET_B = 1;
+const int LEVEL_SET_C = 3;
+const int LEVEL_SET_D = 4;
 
 // Motor outputs
-const int L_MOTOR_DIRECTION = 4;
+const int L_MOTOR_DIRECTION = 8;
 const int L_MOTOR_STEP = 9;
-const int R_MOTOR_DIRECTION = 7;
+const int R_MOTOR_DIRECTION = 10;
 const int R_MOTOR_STEP = 11;
 
 // MAX7219 LED Driver pins
