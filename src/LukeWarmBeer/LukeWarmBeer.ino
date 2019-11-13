@@ -16,11 +16,11 @@ const int LEVEL_SENSOR = 3;
 const int START = 7;
 
 // Level setters
-// can also use PORTD B00011011 to set these
+// can also use PORTD B00110011 to set these
 const int LEVEL_SET_A = 0;
 const int LEVEL_SET_B = 1;
-const int LEVEL_SET_C = 3;
-const int LEVEL_SET_D = 4;
+const int LEVEL_SET_C = 4;
+const int LEVEL_SET_D = 5;
 
 // Motor outputs
 const int L_MOTOR_DIRECTION = 8;
