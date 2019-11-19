@@ -1,12 +1,12 @@
 // Constants
 const int OFF = 0;
 const int ON = 1;
+const int UP_THRESHOLD = 750;
+const int DOWN_THRESHOLD = 300;
 
 // Inputs
-const int L_UP = A5;
-const int L_DOWN = A4;
-const int R_UP = A3;
-const int R_DOWN = A2;
+const int L_JOYSTICK = A3;
+const int R_JOYSTICK = A2;
 
 const int L_BOTTOM = A1;
 const int R_BOTTOM = A0;
@@ -48,14 +48,12 @@ void setup() {
   configureInputs();
   configureLeftMotor();
   configureRightMotor();
-  configureDisplay();
+  /* configureDisplay(); */
 }
 
 void configureInputs() {
-  pinMode(L_DOWN, INPUT_PULLUP);
-  pinMode(L_UP, INPUT_PULLUP);
-  pinMode(R_DOWN, INPUT_PULLUP);
-  pinMode(R_UP, INPUT_PULLUP);
+  pinMode(L_JOYSTICK, INPUT);
+  pinMode(R_JOYSTICK, INPUT);
   pinMode(BALL_RETURN, INPUT_PULLUP);
   pinMode(LEVEL_SENSOR, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(BALL_RETURN), ballReturn, FALLING);
@@ -74,9 +72,9 @@ void configureLeftMotor() {
   // timer 1, output A, pin 9
   // Section 15 in datasheet
   // fast PWM with top limit set by OCR1A
-  // clock prescale starts 64
+  // clock prescale starts 8
   TCCR1A = bit(COM1A0) | bit(WGM11) | bit(WGM10);
-  TCCR1B = bit(WGM13) | bit(WGM12) | bit(CS11) | bit(CS10);
+  TCCR1B = bit(WGM13) | bit(WGM12) | bit(CS11);
   OCR1A = 75;
 }
 
@@ -86,9 +84,9 @@ void configureRightMotor() {
   // timer 2, ouput A, pin 11
   // Section 17 in datasheet
   // fast PWM with top limit set by OCR2A, inverting
-  // clock prescale starts at 64
+  // clock prescale starts at 8
   TCCR2A = bit(COM2A0) | bit(WGM21) | bit(WGM20);
-  TCCR2B = bit(WGM22) | bit(CS22);
+  TCCR2B = bit(WGM22) | bit(CS21);
   OCR2A = 200;
 }
 
@@ -131,8 +129,6 @@ void testDisplay() {
   setRegister(7, score.charAt(6));
   setRegister(8, score.charAt(7));
   setRegister(MAX7219_REG_SHUTDOWN, ON); // turn on
-
-  delay(100);
 }
 
 void setRegister(byte reg, byte value)
@@ -144,28 +140,25 @@ void setRegister(byte reg, byte value)
 }
 
 void controlMotors() {
-    boolean l_down = !digitalRead(L_DOWN);
-    boolean l_up = !digitalRead(L_UP);
+    int l_joystick = analogRead(L_JOYSTICK);
+    int r_joystick = analogRead(R_JOYSTICK);
 
-    boolean r_down = !digitalRead(R_DOWN);
-    boolean r_up = !digitalRead(R_UP);
-
-    if (l_down) {
+    if (l_joystick > UP_THRESHOLD) {
       digitalWrite(L_MOTOR_DIRECTION, HIGH);
-      setLeftSpeed(32);
-    } else if (l_up) {
+      setLeftSpeed(128);
+    } else if (l_joystick > DOWN_THRESHOLD) {
       digitalWrite(L_MOTOR_DIRECTION, LOW);
-      setLeftSpeed(16);
+      setLeftSpeed(128);
     } else {
       setLeftSpeed(0);
     }
 
-    if (r_down) {
+    if (r_joystick > UP_THRESHOLD) {
       digitalWrite(R_MOTOR_DIRECTION, HIGH);
-      setRightSpeed(150);
-    } else if (r_up) {
+      setRightSpeed(128);
+    } else if (r_joystick > DOWN_THRESHOLD) {
       digitalWrite(R_MOTOR_DIRECTION, LOW);
-      setRightSpeed(220);
+      setRightSpeed(128);
     } else {
       setRightSpeed(0);
     }
