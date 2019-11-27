@@ -14,6 +14,7 @@ https://www.youtube.com/watch?v=-uOwARIPkDc
 - motors and pulley
 - controls and switches
 - microcontroller
+- game loop / state machine for game logic
 - display
 - music and sound effects
 
