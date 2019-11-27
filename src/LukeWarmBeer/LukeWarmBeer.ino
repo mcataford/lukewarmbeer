@@ -3,6 +3,8 @@ const int OFF = 0;
 const int ON = 1;
 const int UP_THRESHOLD = 750;
 const int DOWN_THRESHOLD = 300;
+const bool UP = HIGH;
+const bool DOWN = LOW;
 
 // Inputs
 const int L_JOYSTICK = A3;
@@ -40,30 +42,44 @@ const int MAX7219_REG_SCANLIMIT = 0x0B;
 const int MAX7219_REG_SHUTDOWN = 0x0C;
 const int MAX7219_REG_DISPTEST = 0x0F;
 
+
+/******************************************************************************
+  State and Variables
+ */
+volatile bool didTriggerBallReturn = false;
+volatile bool didTriggerLevelComplete = false;
+
 /******************************************************************************
   Setup
  */
 
 void setup() {
-  configureInputs();
+  configureIO();
   configureLeftMotor();
   configureRightMotor();
-  /* configureDisplay(); */
+  configureDisplay();
 }
 
-void configureInputs() {
+void configureIO() {
+  pinMode(LEVEL_SET_A, OUTPUT);
+  pinMode(LEVEL_SET_B, OUTPUT);
+  pinMode(LEVEL_SET_C, OUTPUT);
+  pinMode(LEVEL_SET_D, OUTPUT);
+  // set to start at 8 (level 1)
+  digitalWrite(LEVEL_SET_A, LOW);
+  digitalWrite(LEVEL_SET_B, LOW);
+  digitalWrite(LEVEL_SET_C, LOW);
+  digitalWrite(LEVEL_SET_D, HIGH);
+
   pinMode(L_JOYSTICK, INPUT);
   pinMode(R_JOYSTICK, INPUT);
+  pinMode(L_BOTTOM, INPUT_PULLUP);
+  pinMode(R_BOTTOM, INPUT_PULLUP);
   pinMode(BALL_RETURN, INPUT_PULLUP);
-  pinMode(LEVEL_SENSOR, INPUT_PULLUP);
+  pinMode(LEVEL_SENSOR, INPUT);
+  pinMode(START, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(BALL_RETURN), ballReturn, FALLING);
-  attachInterrupt(digitalPinToInterrupt(LEVEL_SENSOR), levelSensor, FALLING);
-}
-
-void ballReturn() {
-}
-
-void levelSensor() {
+  attachInterrupt(digitalPinToInterrupt(LEVEL_SENSOR), levelSensor, RISING);
 }
 
 void configureLeftMotor() {
@@ -76,6 +92,8 @@ void configureLeftMotor() {
   TCCR1A = bit(COM1A0) | bit(WGM11) | bit(WGM10);
   TCCR1B = bit(WGM13) | bit(WGM12) | bit(CS11);
   OCR1A = 75;
+
+  setLeftSpeed(0);
 }
 
 void configureRightMotor() {
@@ -88,6 +106,8 @@ void configureRightMotor() {
   TCCR2A = bit(COM2A0) | bit(WGM21) | bit(WGM20);
   TCCR2B = bit(WGM22) | bit(CS21);
   OCR2A = 200;
+
+   setRightSpeed(0);
 }
 
 void configureDisplay() {
@@ -100,34 +120,74 @@ void configureDisplay() {
 
 void resetDisplay()
 {
-    setRegister(MAX7219_REG_SHUTDOWN, OFF);   // turn off display
+    setRegister(MAX7219_REG_SHUTDOWN, ON);   // turn off display
     setRegister(MAX7219_REG_DISPTEST, OFF);   // turn off test mode
-    setRegister(MAX7219_REG_INTENSITY, 0x0D); // display intensity
+    setRegister(MAX7219_REG_INTENSITY, 0x07); // display intensity
 }
+
+
+/******************************************************************************
+  Interrupts
+ */
+
+void ballReturn() {
+  didTriggerBallReturn = true;
+}
+
+void levelSensor() {
+  didTriggerLevelComplete = true;
+}
+
 
 /******************************************************************************
   Loop
  */
 
 void loop() {
+  String topRow = "1111";
+  String bottomRow = "2222";
+
+  if (didTriggerBallReturn) {
+    topRow = "3333";
+    didTriggerBallReturn = false;
+  }
+  if (didTriggerLevelComplete) {
+    bottomRow = "4444";
+    didTriggerLevelComplete = false;
+  }
+
+  if (!digitalRead(L_BOTTOM)) {
+    topRow = "5555";
+  }
+  if (!digitalRead(R_BOTTOM)) {
+    bottomRow = "6666";
+  }
+  if (!digitalRead(START)) {
+    bottomRow = "7777";
+  }
+
   controlMotors();
-  /* setDisplay(); */
+  updateDisplay(topRow, bottomRow);
+
+  delay(20);
 }
 
-void testDisplay() {
-  String score = "01234567";
-
+void updateDisplay(String topRow, String bottomRow) {
   setRegister(MAX7219_REG_SHUTDOWN, OFF); // turn off
-  setRegister(MAX7219_REG_SCANLIMIT, 7); // limit to 8 digits
+  setRegister(MAX7219_REG_SCANLIMIT, 7); // 8 digits
   setRegister(MAX7219_REG_DECODE, 0b11111111); // decode all digits
-  setRegister(1, score.charAt(0));
-  setRegister(2, score.charAt(1));
-  setRegister(3, score.charAt(2));
-  setRegister(4, score.charAt(3));
-  setRegister(5, score.charAt(4));
-  setRegister(6, score.charAt(5));
-  setRegister(7, score.charAt(6));
-  setRegister(8, score.charAt(7));
+  // legal characters to decode: 0123456789-HELP
+
+  setRegister(1, topRow.charAt(0));
+  setRegister(2, topRow.charAt(1));
+  setRegister(3, topRow.charAt(2));
+  setRegister(4, topRow.charAt(3));
+
+  setRegister(5, bottomRow.charAt(0));
+  setRegister(6, bottomRow.charAt(1));
+  setRegister(7, bottomRow.charAt(2));
+  setRegister(8, bottomRow.charAt(3));
+
   setRegister(MAX7219_REG_SHUTDOWN, ON); // turn on
 }
 
@@ -144,20 +204,20 @@ void controlMotors() {
     int r_joystick = analogRead(R_JOYSTICK);
 
     if (l_joystick > UP_THRESHOLD) {
-      digitalWrite(L_MOTOR_DIRECTION, HIGH);
+      digitalWrite(L_MOTOR_DIRECTION, UP);
       setLeftSpeed(128);
     } else if (l_joystick > DOWN_THRESHOLD) {
-      digitalWrite(L_MOTOR_DIRECTION, LOW);
+      digitalWrite(L_MOTOR_DIRECTION, DOWN);
       setLeftSpeed(128);
     } else {
       setLeftSpeed(0);
     }
 
     if (r_joystick > UP_THRESHOLD) {
-      digitalWrite(R_MOTOR_DIRECTION, HIGH);
+      digitalWrite(R_MOTOR_DIRECTION, UP);
       setRightSpeed(128);
     } else if (r_joystick > DOWN_THRESHOLD) {
-      digitalWrite(R_MOTOR_DIRECTION, LOW);
+      digitalWrite(R_MOTOR_DIRECTION, DOWN);
       setRightSpeed(128);
     } else {
       setRightSpeed(0);
