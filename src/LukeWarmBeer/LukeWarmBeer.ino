@@ -34,10 +34,10 @@ unsigned char decode_7seg(unsigned char chr)
 // Constants
 const int OFF = 0;
 const int ON = 1;
-const int UP_THRESHOLD = 750;
-const int DOWN_THRESHOLD = 300;
-const bool UP = HIGH;
-const bool DOWN = LOW;
+const int DOWN_THRESHOLD = 750;
+const int UP_THRESHOLD = 300;
+const bool DOWN = HIGH;
+const bool UP = LOW;
 const int SCREEN_SCROLL_DELAY = 350; // ms
 const int SCREEN_BLINK_DELAY = 1000; // ms
 
@@ -130,7 +130,7 @@ void initializeState() {
   state.ballsLeft = 3;
   state.currentLevel = 1;
   state.score = 0;
-  state.bonus = 0;
+  state.bonus = 950;
   state.currentState = START_STATE;
 }
 
@@ -142,7 +142,7 @@ void configureIO() {
   digitalWrite(LEVEL_SET_A, LOW);
   digitalWrite(LEVEL_SET_B, LOW);
   digitalWrite(LEVEL_SET_C, LOW);
-  digitalWrite(LEVEL_SET_D, LOW);
+  digitalWrite(LEVEL_SET_D, HIGH);
 
   pinMode(L_JOYSTICK, INPUT);
   pinMode(R_JOYSTICK, INPUT);
@@ -223,8 +223,8 @@ void loop() {
   unsigned long currentMillis = millis();
 
   if(state.currentState == START_STATE) {
-    char topRow[] =    "PrESS     ";
-    char bottomRow[] = "     StArt";
+    char topRow[] =    "PrESSzzzzz";
+    char bottomRow[] = "zzzzzStArt";
 
     for (int i = 0; i < 4; i++) {
       topDisplay[i] = topRow[(state.topRowScrollPosition + i) % strlen(topRow)];
@@ -240,28 +240,22 @@ void loop() {
     }
 
     if (!digitalRead(START)) {
-      state.score = 0;
-      state.bonus = 999;
-      state.currentLevel = 1;
-      state.ballsLeft = 3;
       state.currentState = PLAY_STATE;
-      didTriggerLevelComplete = false;
-      didTriggerBallReturn = false;
     }
   }
 
   else if (state.currentState == PLAY_STATE) {
     /* setLevel(state.currentLevel); */
 
-    strcpy(bottomDisplay, "zzzz");
-    String(state.score).toCharArray(bottomDisplay, 4);
+    displayBonus(topDisplay);
+    displayScore(bottomDisplay);
 
-    String(state.bonus).toCharArray(topDisplay, 4);
-    for (int i = 4; i > 0; i--){
-      topDisplay[i] = topDisplay[i-1];
-    }
     if (currentMillis - state.lastMillis > SCREEN_BLINK_DELAY) {
       state.blinkState = !state.blinkState;
+      state.bonus = state.bonus - 50;
+      if (state.bonus < 1) {
+        state.bonus = 0;
+      }
       state.lastMillis = currentMillis;
     }
     if (state.blinkState) {
@@ -274,13 +268,11 @@ void loop() {
     controlMotors();
 
     if (didTriggerBallReturn) {
+      state.ballsLeft = state.ballsLeft - 1;
       if (didTriggerLevelComplete) {
-        Serial.println("WIN");
-        state.currentLevel += 1;
+        state.score = state.score + state.bonus;
         state.currentState = LEVEL_WON_STATE;
       } else {
-        Serial.println("LOSE");
-        state.ballsLeft -= 1;
         state.currentState = LEVEL_LOST_STATE;
       }
       didTriggerLevelComplete = false;
@@ -290,20 +282,100 @@ void loop() {
 
   else if (state.currentState == LEVEL_WON_STATE) {
     strcpy(topDisplay, "Good");
-    strcpy(bottomDisplay, "Good");
+    strcpy(bottomDisplay, "zzzz");
+    displayScore(bottomDisplay);
+
     updateDisplay(topDisplay, bottomDisplay);
+
+    if (digitalRead(L_BOTTOM)) {
+      digitalWrite(L_MOTOR_DIRECTION, DOWN);
+      setLeftSpeed(128);
+    } else {
+      setLeftSpeed(0);
+    }
+    if (digitalRead(L_BOTTOM)) {
+      digitalWrite(R_MOTOR_DIRECTION, DOWN);
+      setRightSpeed(128);
+    } else {
+      setRightSpeed(0);
+    }
+
     if (!digitalRead(START)) {
-      state.currentState = PLAY_STATE;
+      state.bonus = 950;
+      if (state.ballsLeft < 1) {
+        state.score = 0;
+        state.ballsLeft = 3;
+        state.currentState = START_STATE;
+      } else {
+        state.currentState = PLAY_STATE;
+      }
+      setRightSpeed(0);
+      setLeftSpeed(0);
+      delay(500);
+      didTriggerLevelComplete = false;
+      didTriggerBallReturn = false;
     }
   }
 
   else if (state.currentState == LEVEL_LOST_STATE) {
-    strcpy(topDisplay, "LOSE");
-    strcpy(bottomDisplay, "LOSE");
+    strcpy(topDisplay, "zzzz");
+    strcpy(bottomDisplay, "OOPS");
+
+    if (digitalRead(L_BOTTOM)) {
+      digitalWrite(L_MOTOR_DIRECTION, DOWN);
+      setLeftSpeed(128);
+    } else {
+      setLeftSpeed(0);
+    }
+    if (digitalRead(L_BOTTOM)) {
+      digitalWrite(R_MOTOR_DIRECTION, DOWN);
+      setRightSpeed(128);
+    } else {
+      setRightSpeed(0);
+    }
+
     updateDisplay(topDisplay, bottomDisplay);
     if (!digitalRead(START)) {
-      state.currentState = PLAY_STATE;
+      state.bonus = 950;
+      if (state.ballsLeft < 1) {
+        state.score = 0;
+        state.ballsLeft = 3;
+        state.currentState = START_STATE;
+      } else {
+        state.currentState = PLAY_STATE;
+      }
+      setRightSpeed(0);
+      setLeftSpeed(0);
+      delay(500);
+      didTriggerLevelComplete = false;
+      didTriggerBallReturn = false;
     }
+  }
+}
+
+void displayScore(char bottomDisplay[]) {
+  String(state.score).toCharArray(bottomDisplay, 5);
+  if (strlen(bottomDisplay) < 4) {
+    bottomDisplay[3] = 'z';
+  }
+  if (strlen(bottomDisplay) < 3) {
+    bottomDisplay[2] = 'z';
+  }
+  if (strlen(bottomDisplay) < 2) {
+    bottomDisplay[1] = 'z';
+  }
+}
+
+void displayBonus(char topDisplay[]) {
+  String(state.bonus).toCharArray(topDisplay, 4);
+  if (strlen(topDisplay) < 3) {
+    topDisplay[2] = 'z';
+  }
+  if (strlen(topDisplay) < 2) {
+    topDisplay[1] = 'z';
+  }
+  for (int i = 4; i > 0; i--){
+    topDisplay[i] = topDisplay[i-1];
   }
 }
 
@@ -341,22 +413,22 @@ void controlMotors() {
     int l_joystick = analogRead(L_JOYSTICK);
     int r_joystick = analogRead(R_JOYSTICK);
 
-    if (l_joystick > UP_THRESHOLD) {
-      digitalWrite(L_MOTOR_DIRECTION, UP);
-      setLeftSpeed(128);
-    } else if (l_joystick > DOWN_THRESHOLD) {
+    if ((l_joystick > DOWN_THRESHOLD) && digitalRead(L_BOTTOM)) {
       digitalWrite(L_MOTOR_DIRECTION, DOWN);
-      setLeftSpeed(128);
+      setLeftSpeed(90);
+    } else if (l_joystick > UP_THRESHOLD && l_joystick < DOWN_THRESHOLD) {
+      digitalWrite(L_MOTOR_DIRECTION, UP);
+      setLeftSpeed(90);
     } else {
       setLeftSpeed(0);
     }
 
-    if (r_joystick > UP_THRESHOLD) {
-      digitalWrite(R_MOTOR_DIRECTION, UP);
-      setRightSpeed(128);
-    } else if (r_joystick > DOWN_THRESHOLD) {
+    if ((r_joystick > DOWN_THRESHOLD) && digitalRead(R_BOTTOM)) {
       digitalWrite(R_MOTOR_DIRECTION, DOWN);
-      setRightSpeed(128);
+      setRightSpeed(90);
+    } else if ((r_joystick > UP_THRESHOLD && r_joystick < DOWN_THRESHOLD)) {
+      digitalWrite(R_MOTOR_DIRECTION, UP);
+      setRightSpeed(90);
     } else {
       setRightSpeed(0);
     }
