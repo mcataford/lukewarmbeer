@@ -27,12 +27,12 @@ https://easyeda.com/editor#id=|5c82f9019097461287bc8b2208835527
 
 ## :pencil2: Next steps
 
-- [ ] design thing
-- [ ] build thing
-- [ ] design circuit
-- [ ] build circuit
-- [ ] find a good ball
-- [ ] design code
+- [x] design thing
+- [x] build thing
+- [x] design circuit
+- [x] build circuit
+- [x] find a good ball
+- [x] design code
 - [ ] write code
 - [ ] replace multiplexer chip
 - [ ] music and sound effects
