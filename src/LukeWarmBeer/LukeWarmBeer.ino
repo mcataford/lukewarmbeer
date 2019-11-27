@@ -46,8 +46,29 @@ const int MAX7219_REG_DISPTEST = 0x0F;
 /******************************************************************************
   State and Variables
  */
+
+enum CurrentState {
+                    START_STATE,
+                    PLAY_STATE,
+                    LEVEL_LOST_STATE,
+                    LEVEL_WON_STATE,
+                    GAME_LOST_STATE,
+                    GAME_WON_STATE,
+                    ENTER_SCORE_STATE,
+};
+
 volatile bool didTriggerBallReturn = false;
 volatile bool didTriggerLevelComplete = false;
+
+struct GameState {
+                int ballsLeft;
+                int currentLevel;
+                int score;
+                int bonus;
+                CurrentState currentState;
+};
+
+struct GameState state;
 
 /******************************************************************************
   Setup
@@ -58,6 +79,15 @@ void setup() {
   configureLeftMotor();
   configureRightMotor();
   configureDisplay();
+  initializeState();
+}
+
+void initializeState() {
+  state.ballsLeft = 0;
+  state.currentLevel = 1;
+  state.score = 0;
+  state.bonus = 0;
+  state.currentState = START_STATE;
 }
 
 void configureIO() {
@@ -144,32 +174,61 @@ void levelSensor() {
  */
 
 void loop() {
-  String topRow = "1111";
-  String bottomRow = "2222";
 
-  if (didTriggerBallReturn) {
-    topRow = "3333";
-    didTriggerBallReturn = false;
-  }
-  if (didTriggerLevelComplete) {
-    bottomRow = "4444";
-    didTriggerLevelComplete = false;
+  String topRow, bottomRow;
+
+  switch (state.currentState) {
+
+  case START_STATE:
+    topRow = "1111";
+    bottomRow = "1111";
+    updateDisplay(topRow, bottomRow);
+    if (!digitalRead(START)) {
+      state.currentState = PLAY_STATE;
+    }
+    break;
+
+  case PLAY_STATE:
+    topRow = "2222";
+    bottomRow = "2222";
+    updateDisplay(topRow, bottomRow);
+    controlMotors();
+    break;
+
+  case LEVEL_LOST_STATE:
+    break;
+
+  case LEVEL_WON_STATE:
+    break;
+
+  case GAME_LOST_STATE:
+    break;
+
+  case GAME_WON_STATE:
+    break;
+
+  case ENTER_SCORE_STATE:
+    break;
   }
 
-  if (!digitalRead(L_BOTTOM)) {
-    topRow = "5555";
-  }
-  if (!digitalRead(R_BOTTOM)) {
-    bottomRow = "6666";
-  }
-  if (!digitalRead(START)) {
-    bottomRow = "7777";
-  }
+  /* if (didTriggerBallReturn) { */
+  /*   topRow = "3333"; */
+  /*   didTriggerBallReturn = false; */
+  /* } */
+  /* if (didTriggerLevelComplete) { */
+  /*   bottomRow = "4444"; */
+  /*   didTriggerLevelComplete = false; */
+  /* } */
 
-  controlMotors();
-  updateDisplay(topRow, bottomRow);
-
-  delay(20);
+  /* if (!digitalRead(L_BOTTOM)) { */
+  /*   topRow = "5555"; */
+  /* } */
+  /* if (!digitalRead(R_BOTTOM)) { */
+  /*   bottomRow = "6666"; */
+  /* } */
+  /* if (!digitalRead(START)) { */
+  /*   bottomRow = "7777"; */
+  /* } */
 }
 
 void updateDisplay(String topRow, String bottomRow) {
