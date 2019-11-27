@@ -1,3 +1,36 @@
+/******************************************************************************
+  Seven segment decoding alphabet
+ */
+
+const unsigned char seven_seg_digits_decode_abcdefg[75]= {
+/*  0     1     2     3     4     5     6     7     8     9     :     ;     */
+    0x7E, 0x30, 0x6D, 0x79, 0x33, 0x5B, 0x5F, 0x70, 0x7F, 0x7B, 0x00, 0x00,
+/*  <     =     >     ?     @     A     B     C     D     E     F     G     */
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x77, 0x00, 0x4E, 0x00, 0x4F, 0x47, 0x5E,
+/*  H     I     J     K     L     M     N     O     P     Q     R     S     */
+    0x37, 0x06, 0x3C, 0x00, 0x0E, 0x00, 0x00, 0x7E, 0x67, 0x00, 0x00, 0x5B,
+/*  T     U     V     W     X     Y     Z     [     \     ]     ^     _     */
+    0x00, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/*  `     a     b     c     d     e     f     g     h     i     j     k     */
+    0x00, 0x7D, 0x1F, 0x0D, 0x3D, 0x00, 0x00, 0x00, 0x17, 0x00, 0x00, 0x00,
+/*  l     m     n     o     p     q     r     s     t     u     v     w     */
+    0x00, 0x00, 0x15, 0x1D, 0x00, 0x73, 0x05, 0x00, 0x0F, 0x1C, 0x00, 0x00,
+/*  x     y     z     */
+    0x00, 0x3B, 0x00
+};
+
+/* Invalid letters are mapped to all segments off (0x00). */
+unsigned char decode_7seg(unsigned char chr)
+{ /* assuming implementation uses ASCII */
+    if (chr > (unsigned char)'z')
+        return 0x00;
+    return seven_seg_digits_decode_abcdefg[chr - '0'];
+}
+
+/******************************************************************************
+  Constants
+ */
+
 // Constants
 const int OFF = 0;
 const int ON = 1;
@@ -5,6 +38,8 @@ const int UP_THRESHOLD = 750;
 const int DOWN_THRESHOLD = 300;
 const bool UP = HIGH;
 const bool DOWN = LOW;
+const int SCREEN_SCROLL_DELAY = 350; // ms
+const int SCREEN_BLINK_DELAY = 1000; // ms
 
 // Inputs
 const int L_JOYSTICK = A3;
@@ -61,11 +96,15 @@ volatile bool didTriggerBallReturn = false;
 volatile bool didTriggerLevelComplete = false;
 
 struct GameState {
-                int ballsLeft;
-                int currentLevel;
-                int score;
-                int bonus;
-                CurrentState currentState;
+  unsigned long lastMillis;
+  int topRowScrollPosition;
+  int bottomRowScrollPosition;
+  bool blinkState;
+  int ballsLeft;
+  int currentLevel;
+  int score;
+  int bonus;
+  CurrentState currentState;
 };
 
 struct GameState state;
@@ -75,6 +114,7 @@ struct GameState state;
  */
 
 void setup() {
+  Serial.begin(9600);
   configureIO();
   configureLeftMotor();
   configureRightMotor();
@@ -83,7 +123,11 @@ void setup() {
 }
 
 void initializeState() {
-  state.ballsLeft = 0;
+  state.lastMillis = millis();
+  state.topRowScrollPosition = 0;
+  state.bottomRowScrollPosition = 0;
+  state.blinkState = true;
+  state.ballsLeft = 3;
   state.currentLevel = 1;
   state.score = 0;
   state.bonus = 0;
@@ -95,11 +139,10 @@ void configureIO() {
   pinMode(LEVEL_SET_B, OUTPUT);
   pinMode(LEVEL_SET_C, OUTPUT);
   pinMode(LEVEL_SET_D, OUTPUT);
-  // set to start at 8 (level 1)
   digitalWrite(LEVEL_SET_A, LOW);
   digitalWrite(LEVEL_SET_B, LOW);
   digitalWrite(LEVEL_SET_C, LOW);
-  digitalWrite(LEVEL_SET_D, HIGH);
+  digitalWrite(LEVEL_SET_D, LOW);
 
   pinMode(L_JOYSTICK, INPUT);
   pinMode(R_JOYSTICK, INPUT);
@@ -175,77 +218,113 @@ void levelSensor() {
 
 void loop() {
 
-  String topRow, bottomRow;
+  char topDisplay[5] = "zzzz";
+  char bottomDisplay[5] = "zzzz";
+  unsigned long currentMillis = millis();
 
-  switch (state.currentState) {
+  if(state.currentState == START_STATE) {
+    char topRow[] =    "PrESS     ";
+    char bottomRow[] = "     StArt";
 
-  case START_STATE:
-    topRow = "1111";
-    bottomRow = "1111";
-    updateDisplay(topRow, bottomRow);
+    for (int i = 0; i < 4; i++) {
+      topDisplay[i] = topRow[(state.topRowScrollPosition + i) % strlen(topRow)];
+      bottomDisplay[i] = bottomRow[(state.bottomRowScrollPosition + i) % strlen(bottomRow)];
+    }
+
+    if (currentMillis - state.lastMillis > SCREEN_SCROLL_DELAY) {
+      state.topRowScrollPosition = (state.topRowScrollPosition + 1) % strlen(topRow);
+      state.bottomRowScrollPosition = (state.bottomRowScrollPosition + 1) % strlen(bottomRow);
+      state.lastMillis = currentMillis;
+
+      updateDisplay(topDisplay, bottomDisplay);
+    }
+
+    if (!digitalRead(START)) {
+      state.score = 0;
+      state.bonus = 999;
+      state.currentLevel = 1;
+      state.ballsLeft = 3;
+      state.currentState = PLAY_STATE;
+      didTriggerLevelComplete = false;
+      didTriggerBallReturn = false;
+    }
+  }
+
+  else if (state.currentState == PLAY_STATE) {
+    /* setLevel(state.currentLevel); */
+
+    strcpy(bottomDisplay, "zzzz");
+    String(state.score).toCharArray(bottomDisplay, 4);
+
+    String(state.bonus).toCharArray(topDisplay, 4);
+    for (int i = 4; i > 0; i--){
+      topDisplay[i] = topDisplay[i-1];
+    }
+    if (currentMillis - state.lastMillis > SCREEN_BLINK_DELAY) {
+      state.blinkState = !state.blinkState;
+      state.lastMillis = currentMillis;
+    }
+    if (state.blinkState) {
+      topDisplay[0] = state.ballsLeft+'0';
+    } else {
+      topDisplay[0] = 'z';
+    }
+
+    updateDisplay(topDisplay, bottomDisplay);
+    controlMotors();
+
+    if (didTriggerBallReturn) {
+      if (didTriggerLevelComplete) {
+        Serial.println("WIN");
+        state.currentLevel += 1;
+        state.currentState = LEVEL_WON_STATE;
+      } else {
+        Serial.println("LOSE");
+        state.ballsLeft -= 1;
+        state.currentState = LEVEL_LOST_STATE;
+      }
+      didTriggerLevelComplete = false;
+      didTriggerBallReturn = false;
+    }
+  }
+
+  else if (state.currentState == LEVEL_WON_STATE) {
+    strcpy(topDisplay, "Good");
+    strcpy(bottomDisplay, "Good");
+    updateDisplay(topDisplay, bottomDisplay);
     if (!digitalRead(START)) {
       state.currentState = PLAY_STATE;
     }
-    break;
-
-  case PLAY_STATE:
-    topRow = "2222";
-    bottomRow = "2222";
-    updateDisplay(topRow, bottomRow);
-    controlMotors();
-    break;
-
-  case LEVEL_LOST_STATE:
-    break;
-
-  case LEVEL_WON_STATE:
-    break;
-
-  case GAME_LOST_STATE:
-    break;
-
-  case GAME_WON_STATE:
-    break;
-
-  case ENTER_SCORE_STATE:
-    break;
   }
 
-  /* if (didTriggerBallReturn) { */
-  /*   topRow = "3333"; */
-  /*   didTriggerBallReturn = false; */
-  /* } */
-  /* if (didTriggerLevelComplete) { */
-  /*   bottomRow = "4444"; */
-  /*   didTriggerLevelComplete = false; */
-  /* } */
-
-  /* if (!digitalRead(L_BOTTOM)) { */
-  /*   topRow = "5555"; */
-  /* } */
-  /* if (!digitalRead(R_BOTTOM)) { */
-  /*   bottomRow = "6666"; */
-  /* } */
-  /* if (!digitalRead(START)) { */
-  /*   bottomRow = "7777"; */
-  /* } */
+  else if (state.currentState == LEVEL_LOST_STATE) {
+    strcpy(topDisplay, "LOSE");
+    strcpy(bottomDisplay, "LOSE");
+    updateDisplay(topDisplay, bottomDisplay);
+    if (!digitalRead(START)) {
+      state.currentState = PLAY_STATE;
+    }
+  }
 }
 
-void updateDisplay(String topRow, String bottomRow) {
+void setLevel(int level) {
+  PORTD = 0b00110011 & ((level & 0b00001100) << 2) & (level & 0b00000011);
+}
+
+void updateDisplay(char topRow[5], char bottomRow[5]) {
   setRegister(MAX7219_REG_SHUTDOWN, OFF); // turn off
   setRegister(MAX7219_REG_SCANLIMIT, 7); // 8 digits
-  setRegister(MAX7219_REG_DECODE, 0b11111111); // decode all digits
-  // legal characters to decode: 0123456789-HELP
+  setRegister(MAX7219_REG_DECODE, 0b00000000); // don't decode digits
 
-  setRegister(1, topRow.charAt(0));
-  setRegister(2, topRow.charAt(1));
-  setRegister(3, topRow.charAt(2));
-  setRegister(4, topRow.charAt(3));
+  setRegister(1, decode_7seg(topRow[0]));
+  setRegister(2, decode_7seg(topRow[1]));
+  setRegister(3, decode_7seg(topRow[2]));
+  setRegister(4, decode_7seg(topRow[3]));
 
-  setRegister(5, bottomRow.charAt(0));
-  setRegister(6, bottomRow.charAt(1));
-  setRegister(7, bottomRow.charAt(2));
-  setRegister(8, bottomRow.charAt(3));
+  setRegister(5, decode_7seg(bottomRow[0]));
+  setRegister(6, decode_7seg(bottomRow[1]));
+  setRegister(7, decode_7seg(bottomRow[2]));
+  setRegister(8, decode_7seg(bottomRow[3]));
 
   setRegister(MAX7219_REG_SHUTDOWN, ON); // turn on
 }
