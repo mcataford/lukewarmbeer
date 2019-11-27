@@ -35,20 +35,21 @@ https://easyeda.com/editor#id=|5c82f9019097461287bc8b2208835527
 - [x] design code
 - [ ] write code
 - [ ] replace multiplexer chip
+- [ ] design game board
+- [ ] add other level switches
 - [ ] music and sound effects
 - [ ] art and polish
 
 
 ## Bill of Materials
 
-| Description                   | Part Number                       | Quantity | Approx Cost Per |
-|-------------------------------|-----------------------------------|----------|-----------------|
-| Microcontroller               | Arduino Uno                       |          |                 |
-| Quad AND                      | 74ACT11008N                       | 2        | 3.82 CAD        |
-| 16 channel multiplexer        | 74HC4067                          |          |                 |
-| 7 segment display driver      | MAX7219                           | 2        |                 |
-| Stepper motor driver          | A4988 breakout (Pololu)           | 2        | 5.95 USD        |
-| Timing belt and shaft coupler | https://tinyurl.com/y4ls89b8      |          |                 |
-| Telescoping rod               | e.g. https://tinyurl.com/y29gk65v |          |                 |
-| 5/8 inch Ball bearing         |                                   |          |                 |
-| ...                           |                                   |          |                 |
+| Description                   | Part Number                       | Quantity |
+|-------------------------------|-----------------------------------|----------|
+| Microcontroller               | Arduino Uno                       |          |
+| 16 channel multiplexer        | 74HC4067                          |          |
+| 7 segment display driver      | MAX7219                           | 2        |
+| Stepper motor driver          | A4988 breakout (Pololu)           | 2        |
+| Timing belt and shaft coupler | https://tinyurl.com/y4ls89b8      |          |
+| Telescoping rod               | e.g. https://tinyurl.com/y29gk65v |          |
+| 5/8 inch Ball bearing         |                                   |          |
+| ...                           |                                   |          |
